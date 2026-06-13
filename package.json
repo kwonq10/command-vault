@@ -1,0 +1,61 @@
+{
+  "name": "command-vault",
+  "version": "1.0.0",
+  "description": "Personal launcher for Claude Code slash commands",
+  "author": "Command Vault",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "electron": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "main": "main.cjs",
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.3",
+    "electron": "^42.4.0",
+    "electron-builder": "^26.15.3",
+    "png-to-ico": "^3.0.1"
+  },
+  "build": {
+    "appId": "com.commandvault.app",
+    "productName": "Command収集器",
+    "icon": "assets/icon.ico",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "server.js",
+      "commands.json",
+      "public/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Command-Vault-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

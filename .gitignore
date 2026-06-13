@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dist-icon-check/
+outputs/
+work/
+commands.json
+*.log
