@@ -25,3 +25,7 @@ npm run electron
 ```bash
 npm run dist
 ```
+
+## 🌐 LP
+
+https://command-vault-lp.tetsugaku4.workers.dev
