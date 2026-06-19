@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+    <title>Command Deck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <div class="launcher">
+
+      <!-- ヘッダー -->
+      <header class="window-header">
+        <div class="brand">
+          <span class="brand__mark">/</span>
+          <span class="brand__name">Command <span class="accent">Deck</span></span>
+        </div>
+        <div class="window-controls">
+          <button id="settings-btn" class="ctrl-btn" aria-label="設定" aria-expanded="false">⚙</button>
+        </div>
+      </header>
+
+      <!-- 設定パネル -->
+      <div id="settings-panel" class="settings-panel" hidden>
+
+        <!-- 同期コード -->
+        <div class="settings-row">
+          <label class="settings-label" for="sync-input">同期コード</label>
+          <div class="sync-wrap">
+            <input
+              id="sync-input"
+              type="text"
+              class="sync-input"
+              placeholder="例: myteam-2026"
+              autocomplete="off"
+              autocapitalize="none"
+              enterkeyhint="go"
+            />
+            <button id="sync-random-btn" class="sync-random-btn" title="ランダム発行">🎲</button>
+            <button id="sync-save-btn" class="sync-save-btn">接続する</button>
+          </div>
+        </div>
+        <div id="sync-status" class="sync-status" hidden></div>
+
+        <!-- 言語切り替え -->
+        <div class="settings-row settings-row--lang">
+          <label class="settings-label" for="language-select">言語 / Language</label>
+          <select id="language-select" class="language-select" aria-label="表示言語">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div id="translate-status" class="sync-status" hidden></div>
+
+      </div>
+
+      <!-- 入力エリア -->
+      <section class="input-area">
+        <form id="add-form" class="add-form">
+          <input
+            id="cmd-input"
+            type="text"
+            placeholder="/compact"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            enterkeyhint="done"
+          />
+          <button type="submit">Add</button>
+        </form>
+      </section>
+
+      <!-- エラー表示 -->
+      <p id="error" class="error" hidden></p>
+
+      <!-- トグルバー -->
+      <div id="list-toggle-bar" class="list-toggle-bar" role="button" tabindex="0"
+           aria-expanded="true" aria-controls="list-area">
+        <span id="list-toggle-arrow" class="toggle-arrow">▼</span>
+        <span>コマンド一覧 (<span id="list-count">0</span>)</span>
+      </div>
+
+      <!-- コマンドリスト -->
+      <div id="list-area" class="list-area">
+        <div id="loading" class="loading" hidden>
+          <span class="loading__spinner"></span>
+          <span>読み込み中...</span>
+        </div>
+        <p id="empty-msg" class="empty-msg" hidden>コマンドがありません</p>
+        <ul id="command-list" class="command-list"></ul>
+      </div>
+
+    </div>
+
+    <!-- ========== 説明入力モーダル ========== -->
+    <div id="modal-desc" class="modal" hidden>
+      <div class="modal__overlay" id="modal-overlay"></div>
+      <div class="modal__box">
+        <p class="modal__title">説明文が取得できませんでした。<br>説明を入力してください</p>
+        <p class="modal__cmd-name" id="modal-cmd-name"></p>
+        <textarea id="new-cmd-desc" class="modal__textarea" rows="4"
+          placeholder="このコマンドの説明を入力..."></textarea>
+        <p id="add-error" class="add-error" hidden></p>
+        <div class="modal__actions">
+          <button id="modal-skip-btn" class="modal__btn modal__btn--skip">スキップ</button>
+          <button id="modal-save-btn" class="modal__btn modal__btn--save">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 削除確認モーダル ========== -->
+    <div id="modal-delete" class="modal" hidden>
+      <div class="modal__overlay" id="delete-overlay"></div>
+      <div class="modal__box modal__box--sm">
+        <p class="modal__title">削除しますか？</p>
+        <p id="delete-cmd-label" class="modal__cmd-name"></p>
+        <div class="modal__actions">
+          <button id="delete-cancel-btn" class="modal__btn modal__btn--skip">キャンセル</button>
+          <button id="delete-confirm-btn" class="modal__btn modal__btn--danger">削除する</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

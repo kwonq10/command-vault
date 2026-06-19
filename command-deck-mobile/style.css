@@ -1,0 +1,628 @@
+/* ============================================================
+   CSS 変数
+   ============================================================ */
+:root {
+  --bg: #0f1117;
+  --bg-surface: #0d1117;
+  --bg-row: #12151c;
+  --accent: #e8784d;
+  --accent-dim: rgba(232, 120, 77, 0.13);
+  --text: #e8eaf0;
+  --text-muted: #6b7280;
+  --border: rgba(255, 255, 255, 0.08);
+  --danger: #e05252;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================================
+   Reset / Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button, input, textarea, select { font-family: inherit; }
+ul { list-style: none; }
+.accent { color: var(--accent); }
+
+/* ============================================================
+   ランチャーウィンドウ
+   ============================================================ */
+.launcher {
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* ============================================================
+   ヘッダー
+   ============================================================ */
+.window-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 10px) 14px 10px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  min-height: calc(var(--safe-top) + 48px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.brand__mark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.brand__name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ctrl-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+.ctrl-btn:active,
+.ctrl-btn[aria-expanded="true"] {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* ============================================================
+   設定パネル
+   ============================================================ */
+.settings-panel {
+  flex: 0 0 auto;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown 0.18s ease;
+}
+.settings-panel[hidden] { display: none; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.sync-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sync-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  padding: 10px 12px;
+  min-height: 40px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.sync-input:focus { border-color: var(--accent); }
+
+.sync-random-btn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 16px;
+  min-width: 40px;
+  min-height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.sync-random-btn:active { border-color: var(--accent); background: var(--accent-dim); }
+
+.sync-save-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 14px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.sync-save-btn:active { opacity: 0.8; }
+
+/* 言語セレクト行 */
+.settings-row--lang {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+
+.language-select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  min-height: 36px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.language-select:focus { border-color: var(--accent); }
+
+/* 翻訳中オーバーレイ */
+.cmd-item__desc.is-translating {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.sync-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+.sync-status[hidden] { display: none; }
+.sync-status.is-error { color: var(--danger); }
+
+/* ============================================================
+   入力エリア
+   ============================================================ */
+.input-area {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.add-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-form input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  padding: 10px 12px;
+  min-height: 44px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.add-form input:focus { border-color: var(--accent); }
+.add-form input::placeholder { color: var(--text-muted); }
+
+.add-form button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 18px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.add-form button:active { opacity: 0.8; transform: scale(0.96); }
+
+/* ============================================================
+   エラー
+   ============================================================ */
+.error {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--danger);
+  padding: 6px 14px;
+  background: rgba(224, 82, 82, 0.08);
+  border-bottom: 1px solid rgba(224, 82, 82, 0.15);
+}
+.error[hidden] { display: none; }
+
+/* ============================================================
+   トグルバー
+   ============================================================ */
+.list-toggle-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  min-height: 40px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.15s;
+}
+.list-toggle-bar:active { background: var(--bg-row); }
+
+.toggle-arrow {
+  font-size: 10px;
+  transition: transform 0.25s;
+}
+.list-toggle-bar[aria-expanded="false"] .toggle-arrow {
+  transform: rotate(-90deg);
+}
+
+/* ============================================================
+   リストエリア
+   ============================================================ */
+.list-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: var(--safe-bottom);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 32px 0;
+}
+.loading[hidden] { display: none; }
+
+.loading__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-msg {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 32px 16px;
+}
+.empty-msg[hidden] { display: none; }
+
+/* ============================================================
+   コマンドリスト
+   ============================================================ */
+.command-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmd-item {
+  border-bottom: 1px solid var(--border);
+}
+
+/* 折りたたみ行 */
+.cmd-item__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-height: 48px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.12s;
+}
+.cmd-item__row:active { background: var(--bg-row); }
+
+.cmd-item__name {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmd-item__chevron {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.cmd-item.is-open .cmd-item__chevron { transform: rotate(180deg); }
+
+/* 展開エリア */
+.cmd-item__detail {
+  display: none;
+  padding: 10px 14px 14px;
+  background: var(--bg-row);
+  border-top: 1px solid var(--border);
+}
+.cmd-item.is-open .cmd-item__detail { display: block; }
+
+.cmd-item__desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  word-break: break-word;
+  margin-bottom: 12px;
+  min-height: 20px;
+}
+.cmd-item__desc:empty::before {
+  content: "説明なし";
+  font-style: italic;
+  opacity: 0.45;
+}
+
+.cmd-item__btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.cmd-item__edit-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  cursor: pointer;
+  min-height: 34px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.cmd-item__edit-btn:active {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.cmd-item__delete {
+  background: none;
+  border: 1px solid rgba(224, 82, 82, 0.3);
+  border-radius: 7px;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  cursor: pointer;
+  min-height: 34px;
+  transition: background 0.15s;
+}
+.cmd-item__delete:active { background: rgba(224, 82, 82, 0.1); }
+
+.cmd-item__edit-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid rgba(232, 120, 77, 0.3);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 8px 10px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+  min-height: 72px;
+}
+.cmd-item__edit-textarea:focus { border-color: var(--accent); }
+.cmd-item__edit-textarea[hidden] { display: none; }
+
+.cmd-item__edit-actions {
+  display: flex;
+  gap: 8px;
+}
+.cmd-item__edit-actions[hidden] { display: none; }
+
+.cmd-item__save-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 18px;
+  cursor: pointer;
+  min-height: 34px;
+  transition: opacity 0.15s;
+}
+.cmd-item__save-btn:active { opacity: 0.8; }
+.cmd-item__save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cmd-item__cancel-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  cursor: pointer;
+  min-height: 34px;
+  transition: background 0.15s;
+}
+.cmd-item__cancel-btn:active { background: var(--bg-row); }
+
+/* ============================================================
+   モーダル
+   ============================================================ */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal[hidden] { display: none; }
+
+.modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.modal__box {
+  position: relative;
+  z-index: 1;
+  background: #161d2a;
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  padding: 20px 16px calc(20px + var(--safe-bottom));
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: slideUp 0.2s ease;
+}
+.modal__box--sm { gap: 12px; }
+
+@keyframes slideUp {
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal__title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.modal__cmd-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: 7px;
+  padding: 8px 12px;
+  word-break: break-all;
+}
+
+.modal__textarea {
+  background: var(--bg);
+  border: 1px solid rgba(232, 120, 77, 0.3);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  padding: 11px 13px;
+  resize: vertical;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal__textarea:focus { border-color: var(--accent); }
+
+.add-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+.add-error[hidden] { display: none; }
+
+.modal__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.modal__btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.modal__btn:active { transform: scale(0.97); }
+
+.modal__btn--save  { background: var(--accent); color: #fff; }
+.modal__btn--save:active { opacity: 0.85; }
+.modal__btn--skip  { background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+.modal__btn--skip:active { border-color: var(--accent); color: var(--accent); }
+.modal__btn--danger { background: var(--danger); color: #fff; }
+.modal__btn--danger:active { opacity: 0.85; }
