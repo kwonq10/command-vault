@@ -60,11 +60,26 @@ function prepareDatabase() {
   return dataPath;
 }
 
+function resolveNodeBin() {
+  // インストール済み Electron では process.execPath が .exe 本体を指すため、
+  // 同梱の node.exe (resources/node.exe) または PATH 上の node を探す。
+  const candidates = [
+    path.join(path.dirname(process.execPath), "resources", "node.exe"),
+    path.join(path.dirname(process.execPath), "node.exe"),
+    process.execPath,
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+  return process.execPath;
+}
+
 async function startServer() {
   if (await isPortOpen(PORT)) return;
 
   const serverPath = path.join(__dirname, "server.js");
-  serverProcess = spawn(process.execPath, [serverPath], {
+  const nodeBin = resolveNodeBin();
+  serverProcess = spawn(nodeBin, [serverPath], {
     cwd: __dirname,
     env: {
       ...process.env,
@@ -78,7 +93,7 @@ async function startServer() {
 
   serverProcess.unref();
 
-  if (!(await waitForServer())) {
+  if (!(await waitForServer(20000))) {
     throw new Error(`Command Vault server did not start on port ${PORT}.`);
   }
 }
@@ -151,7 +166,7 @@ async function createWindow() {
   await startServer();
 
   win = new BrowserWindow({
-    title: "Command収集器",
+    title: "Command Deck",
     icon: path.join(__dirname, "assets", "icon.ico"),
     width: 550,
     height: 160,

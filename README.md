@@ -1,4 +1,4 @@
-# Command収集器
+# Command Deck
 
 Claude Code のスラッシュコマンドを収集・管理する Windows デスクトップアプリ。
 

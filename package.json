@@ -25,7 +25,7 @@
   },
   "build": {
     "appId": "com.commandvault.app",
-    "productName": "Command収集器",
+    "productName": "Command Deck",
     "icon": "assets/icon.ico",
     "asar": false,
     "directories": {
