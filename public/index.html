@@ -14,14 +14,34 @@
           <span>Command収集器</span>
         </div>
         <div class="window-controls">
-          <select id="language-select" aria-label="Description language">
-            <option value="ja">日本語</option>
-            <option value="en">English</option>
-          </select>
+          <span id="update-badge" class="update-badge" hidden></span>
+          <button id="settings-btn" type="button" title="設定" aria-label="Settings" aria-expanded="false">⚙</button>
           <button id="minimize-btn" type="button" title="最小化" aria-label="Minimize">－</button>
           <button id="close-button" class="window-close" type="button" aria-label="Close">×</button>
         </div>
       </header>
+
+      <div id="settings-panel" class="settings-panel">
+        <div class="settings-row">
+          <label class="settings-label" for="language-select">言語 / Language</label>
+          <select id="language-select" aria-label="Description language">
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="settings-row sync-code-row">
+          <label class="settings-label" for="sync-code-input">同期コード</label>
+          <div class="sync-code-wrap">
+            <input id="sync-code-input" type="text" class="sync-code-input" placeholder="例: myteam-2026" autocomplete="off" />
+            <button id="sync-code-save" type="button" class="sync-code-save-btn">保存</button>
+          </div>
+        </div>
+        <div id="sync-status" class="sync-status" hidden></div>
+        <div id="update-row" class="settings-row" hidden>
+          <span class="settings-label">アップデート</span>
+          <button id="update-btn" class="update-btn" type="button"></button>
+        </div>
+      </div>
 
       <section class="input-area">
         <form id="add-form" class="add-form">
@@ -43,6 +63,17 @@
         </section>
       </div>
     </main>
+
+    <div id="desc-modal" class="desc-modal" hidden>
+      <div class="desc-modal-box">
+        <p class="desc-modal-title">説明文が取得できませんでした。<br>説明を入力してください</p>
+        <textarea id="desc-modal-input" class="desc-modal-textarea" rows="4" placeholder="このコマンドの説明を入力..."></textarea>
+        <div class="desc-modal-actions">
+          <button id="desc-modal-save" type="button" class="desc-modal-save-btn">保存</button>
+          <button id="desc-modal-skip" type="button" class="desc-modal-skip-btn">スキップ</button>
+        </div>
+      </div>
+    </div>
 
     <script src="/app.js" type="module"></script>
   </body>

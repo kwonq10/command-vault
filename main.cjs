@@ -1,4 +1,11 @@
-const { app, BrowserWindow, Menu, Tray, globalShortcut, ipcMain, nativeImage } = require("electron");
+process.on('uncaughtException', (err) => {
+  require('fs').appendFileSync('C:\\cv\\error.log', new Date().toISOString() + '\n' + err.stack + '\n\n');
+});
+process.on('unhandledRejection', (reason) => {
+  require('fs').appendFileSync('C:\\cv\\error.log', new Date().toISOString() + '\nUnhandledRejection: ' + reason + '\n\n');
+});
+
+const { app, BrowserWindow, Menu, Tray, globalShortcut, ipcMain, nativeImage, shell } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const net = require("node:net");
@@ -122,6 +129,24 @@ function createTray() {
   tray.on("click", toggleWindow);
 }
 
+async function checkForUpdates(win) {
+  try {
+    const { version } = require("./package.json");
+    const response = await fetch("https://api.github.com/repos/kwonq10/command-vault/releases/latest", {
+      headers: { "User-Agent": "command-vault-app" },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    const latestVersion = (data.tag_name || "").replace(/^v/, "");
+    if (latestVersion && latestVersion !== version) {
+      win?.webContents.send("update:available", latestVersion);
+    }
+  } catch {
+    // オフライン・APIエラー時は無視
+  }
+}
+
 async function createWindow() {
   await startServer();
 
@@ -149,6 +174,10 @@ async function createWindow() {
 
   await win.loadURL(APP_URL);
   showWindow();
+
+  win.webContents.on("did-finish-load", () => {
+    checkForUpdates(win);
+  });
 
   win.on("close", (event) => {
     if (!isQuitting) {
@@ -188,6 +217,17 @@ app.whenReady().then(async () => {
 
   ipcMain.on("minimize-window", () => {
     win?.minimize();
+  });
+
+  ipcMain.handle("shell:openExternal", (_event, url) => {
+    try {
+      const u = new URL(url);
+      if (u.protocol !== "https:" && u.protocol !== "http:") return;
+      if (u.hostname !== "github.com" && !u.hostname.endsWith(".github.com")) return;
+      shell.openExternal(u.toString());
+    } catch {
+      // malformed URL は無視
+    }
   });
 
   app.on("activate", showWindow);

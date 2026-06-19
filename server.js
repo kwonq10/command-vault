@@ -6,12 +6,23 @@ import * as cheerio from "cheerio";
 import cors from "cors";
 import express from "express";
 import fetch from "node-fetch";
+import { initializeApp, getApps } from "firebase/app";
+import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from "firebase/firestore";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_PATH = process.env.COMMANDS_DB_PATH || path.join(__dirname, "commands.json");
+const SYNC_CONFIG_PATH = path.join(path.dirname(DB_PATH), "sync-config.json");
 const PORT = process.env.PORT || 3456;
 const FETCH_TIMEOUT_MS = 8000;
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBcWrn5zcF1kUaPqcvVnDeQ5MQGsasQJKI",
+  authDomain: "command-vault-9f1ce.firebaseapp.com",
+  projectId: "command-vault-9f1ce",
+  storageBucket: "command-vault-9f1ce.firebasestorage.app",
+  messagingSenderId: "886072410929",
+  appId: "1:886072410929:web:f0aa9ac7f6482d462ca610"
+};
 const DEFAULT_DESCRIPTION_LANGUAGE = "ja";
 const CLAUDE_CODE_DOC_URLS = {
   ja: "https://docs.anthropic.com/ja/docs/claude-code/cli-usage",
@@ -78,6 +89,104 @@ async function readDB() {
 async function writeDB(commands) {
   await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
   await fs.writeFile(DB_PATH, `${JSON.stringify(commands, null, 2)}\n`, "utf8");
+}
+
+async function readSyncConfig() {
+  try {
+    const raw = await fs.readFile(SYNC_CONFIG_PATH, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+async function writeSyncConfig(config) {
+  await fs.mkdir(path.dirname(SYNC_CONFIG_PATH), { recursive: true });
+  await fs.writeFile(SYNC_CONFIG_PATH, JSON.stringify(config, null, 2), "utf8");
+}
+
+async function getSyncCode() {
+  const config = await readSyncConfig();
+  return config.syncCode || null;
+}
+
+let _firestoreDb = null;
+function firestoreDb() {
+  if (!_firestoreDb) {
+    console.log("[Firebase] initializing app...");
+    const firebaseApp = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
+    _firestoreDb = getFirestore(firebaseApp);
+    console.log("[Firebase] Firestore instance created");
+  }
+  return _firestoreDb;
+}
+
+async function pushCommandToFirestore(syncCode, command, order) {
+  console.log(`[Firestore] push start: syncCode=${syncCode} id=${command.id} order=${order}`);
+  try {
+    const db = firestoreDb();
+    const ref = doc(db, "sync_codes", syncCode, "commands", command.id);
+    await setDoc(ref, { ...command, _order: order });
+    console.log(`[Firestore] push OK: ${command.id}`);
+  } catch (err) {
+    console.error(`[Firestore] push FAILED: ${command.id}`, err);
+    throw err;
+  }
+}
+
+async function deleteCommandFromFirestore(syncCode, commandId) {
+  console.log(`[Firestore] delete start: syncCode=${syncCode} id=${commandId}`);
+  try {
+    const db = firestoreDb();
+    const ref = doc(db, "sync_codes", syncCode, "commands", commandId);
+    await deleteDoc(ref);
+    console.log(`[Firestore] delete OK: ${commandId}`);
+  } catch (err) {
+    console.error(`[Firestore] delete FAILED: ${commandId}`, err);
+    throw err;
+  }
+}
+
+async function pullFromFirestore(syncCode) {
+  const db = firestoreDb();
+  const ref = collection(db, "sync_codes", syncCode, "commands");
+  const snapshot = await getDocs(ref);
+  const items = snapshot.docs.map((d) => d.data());
+  items.sort((a, b) => (a._order ?? 0) - (b._order ?? 0));
+  return items.map(({ _order, ...rest }) => rest);
+}
+
+function mergeCommands(local, remote) {
+  const localMap = new Map(local.map((c) => [c.id, c]));
+  const merged = remote.map((r) => ({ ...r, ...(localMap.get(r.id) || {}) }));
+  const remoteIds = new Set(remote.map((r) => r.id));
+  for (const c of local) {
+    if (!remoteIds.has(c.id)) merged.push(c);
+  }
+  return merged;
+}
+
+async function initSync() {
+  const syncCode = await getSyncCode();
+  console.log(`[Firestore] initSync: syncCode=${syncCode || "(none)"}`);
+  if (!syncCode) return;
+  try {
+    const [local, remote] = await Promise.all([readDB(), pullFromFirestore(syncCode)]);
+    if (remote.length === 0) {
+      for (let i = 0; i < local.length; i++) {
+        await pushCommandToFirestore(syncCode, local[i], i);
+      }
+    } else {
+      const merged = mergeCommands(local, remote);
+      await writeDB(merged);
+      for (let i = 0; i < merged.length; i++) {
+        await pushCommandToFirestore(syncCode, merged[i], i);
+      }
+    }
+    console.log(`Firestore sync complete: ${syncCode}`);
+  } catch (err) {
+    console.error("initSync error:", err);
+  }
 }
 
 function normalizeSnippet(text) {
@@ -186,16 +295,15 @@ function extractDescriptionFromHtml(html, commandName) {
   const commandIndex = bodyText.toLowerCase().indexOf(commandName.toLowerCase());
 
   if (commandIndex >= 0) {
-    const after = bodyText.slice(commandIndex, commandIndex + 500);
-    const nextCommandIndex = after.slice(commandName.length).search(/\s\/[a-z]/i);
-    const snippet =
-      nextCommandIndex > 0
-        ? after.slice(0, commandName.length + nextCommandIndex).trim()
-        : after.slice(0, 300).trim();
-    const sentences = snippet.match(/[^。.!\n]{10,}[。.!]/g) || [];
-    let description = sentences.slice(0, 2).join("").trim();
-    if (!description) description = snippet.slice(0, 120);
-    return description.slice(0, 120).trim();
+    // コマンド名直後のテキストだけを抽出（コマンド名自体は除外）
+    const after = bodyText.slice(commandIndex + commandName.length).trimStart();
+    const nextCommandIndex = after.search(/\s\/[a-z]/i);
+    const chunk = (nextCommandIndex > 0 ? after.slice(0, nextCommandIndex) : after.slice(0, 200)).trim();
+
+    // 句点・ピリオド・感嘆符で終わる最初の1文のみ取得
+    const firstSentence = chunk.match(/^.{5,}?[。.!?]/u);
+    // slice しない — 長さ検証は enrichCommand() の品質検証で行う
+    return firstSentence ? firstSentence[0].trim() : chunk.slice(0, 200).trim();
   }
 
   const heading = $(`h1, h2, h3, h4`).filter((_, el) => {
@@ -203,7 +311,8 @@ function extractDescriptionFromHtml(html, commandName) {
   }).first();
 
   if (heading.length) {
-    const sectionText = normalizeSnippet(`${heading.text()} ${heading.nextUntil("h1, h2, h3").text()}`);
+    // 見出し自体（コマンド名を含む）は除外し、セクション本文のみを使う
+    const sectionText = normalizeSnippet(heading.nextUntil("h1, h2, h3, h4").text());
     if (sectionText) return trimDescription(sectionText);
   }
 
@@ -253,7 +362,25 @@ async function enrichCommand(name, language = DEFAULT_DESCRIPTION_LANGUAGE) {
     tip = curated.tip;
   }
 
-  if (!description) {
+  // 1. 公式ドキュメントを優先して参照（ja → en の順）
+  if (!curated && !description) {
+    for (const docUrl of Object.values(CLAUDE_CODE_DOC_URLS)) {
+      try {
+        const html = await fetchText(docUrl);
+        const snippet = extractDescriptionFromHtml(html, normalizedName);
+        if (snippet) {
+          description = snippet;
+          sourceUrl = docUrl;
+          break;
+        }
+      } catch (error) {
+        console.warn(`Official doc fetch failed: ${docUrl}`, error.message);
+      }
+    }
+  }
+
+  // 2. 公式で見つからない場合のみ DuckDuckGo にフォールバック
+  if (!curated && !description) {
     try {
       const urls = await searchDuckDuckGo(normalizedName, descriptionLanguage);
       for (const url of urls) {
@@ -274,16 +401,20 @@ async function enrichCommand(name, language = DEFAULT_DESCRIPTION_LANGUAGE) {
     }
   }
 
-  if (!description) {
-    description = await fetchOfficialFallback(normalizedName, descriptionLanguage);
-  }
-
-  if (!description) {
-    description =
-      descriptionLanguage === "ja"
-        ? `${normalizedName} — 説明が取得できませんでした。公式ドキュメントを参照してください。`
-        : `${normalizedName} — No description could be retrieved. Please refer to the official documentation.`;
-    sourceUrl = getDocUrl(descriptionLanguage);
+  // スクレイピング結果の品質検証（キュレーション済みは除外）
+  if (!curated && description) {
+    const commandWord = normalizedName.replace(/^\//, "").toLowerCase();
+    const trimmed = description.trimEnd();
+    const isInvalid =
+      // 適切な長さ範囲外（20〜79文字が適切）
+      description.length < 20 || description.length >= 80 ||
+      // 口語・ブログ的表現を含む
+      /ちょっと|微妙|回答が返ってきた|試してみた|使ってみた|やってみた|なんか|わりと|けっこう/.test(description) ||
+      // 文末が句点・ピリオド・感嘆符で終わらない
+      !/[。.!?]$/.test(trimmed) ||
+      // コマンド名（スラッシュなし）が説明文に含まれる
+      description.toLowerCase().includes(commandWord);
+    if (isInvalid) description = "";
   }
 
   const command = {
@@ -327,7 +458,30 @@ app.post("/api/commands", async (req, res, next) => {
     const command = await enrichCommand(commandText, descriptionLanguage);
     commands.unshift(command);
     await writeDB(commands);
+    const syncCode = await getSyncCode();
+    if (syncCode) pushCommandToFirestore(syncCode, command, 0).catch((err) => console.error("[Firestore] POST /api/commands sync error:", err.message));
     res.status(201).json(command);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch("/api/commands/reorder", async (req, res, next) => {
+  try {
+    const { ids } = req.body || {};
+    if (!Array.isArray(ids)) return res.status(400).json({ error: "ids must be an array" });
+
+    const commands = await readDB();
+    const commandMap = new Map(commands.map((c) => [c.id, c]));
+    const reordered = ids.filter((id) => commandMap.has(id)).map((id) => commandMap.get(id));
+    const reorderedIds = new Set(reordered.map((c) => c.id));
+    const remaining = commands.filter((c) => !reorderedIds.has(c.id));
+
+    const nextCommands = [...reordered, ...remaining];
+    await writeDB(nextCommands);
+    const syncCode = await getSyncCode();
+    if (syncCode) nextCommands.forEach((c, i) => pushCommandToFirestore(syncCode, c, i).catch((err) => console.error("[Firestore] reorder sync error:", err.message)));
+    res.json(nextCommands);
   } catch (error) {
     next(error);
   }
@@ -335,16 +489,15 @@ app.post("/api/commands", async (req, res, next) => {
 
 app.patch("/api/commands/:id", async (req, res, next) => {
   try {
-    const allowed = ["description", "tip", "usage", "params", "descriptionLanguage"];
+    const allowed = ["description", "tip", "usage", "params", "descriptionLanguage", "archived"];
     const updates = Object.fromEntries(
       allowed
         .filter((key) => Object.prototype.hasOwnProperty.call(req.body || {}, key))
-        .map((key) => [
-          key,
-          key === "descriptionLanguage"
-            ? normalizeDescriptionLanguage(req.body[key])
-            : String(req.body[key] ?? "").trim()
-        ])
+        .map((key) => {
+          if (key === "archived") return [key, Boolean(req.body[key])];
+          if (key === "descriptionLanguage") return [key, normalizeDescriptionLanguage(req.body[key])];
+          return [key, String(req.body[key] ?? "").trim()];
+        })
     );
 
     if (!Object.keys(updates).length) {
@@ -362,6 +515,8 @@ app.patch("/api/commands/:id", async (req, res, next) => {
     commands[index].category = inferCategory(commands[index]);
 
     await writeDB(commands);
+    const syncCode = await getSyncCode();
+    if (syncCode) pushCommandToFirestore(syncCode, commands[index], index).catch((err) => console.error("[Firestore] PATCH sync error:", err.message));
     res.json(commands[index]);
   } catch (error) {
     next(error);
@@ -376,7 +531,59 @@ app.delete("/api/commands/:id", async (req, res, next) => {
       return res.status(404).json({ error: "Command not found" });
     }
     await writeDB(nextCommands);
+    const syncCode = await getSyncCode();
+    if (syncCode) deleteCommandFromFirestore(syncCode, req.params.id).catch((err) => console.error("[Firestore] DELETE sync error:", err.message));
     res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/sync-config", async (req, res, next) => {
+  try {
+    const config = await readSyncConfig();
+    res.json(config);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/sync-config", async (req, res, next) => {
+  try {
+    const { syncCode } = req.body || {};
+    const config = await readSyncConfig();
+    config.syncCode = typeof syncCode === "string" ? syncCode.trim() : "";
+    await writeSyncConfig(config);
+    if (config.syncCode) {
+      initSync().catch((err) => console.error("sync after config change:", err));
+    }
+    res.json(config);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/translate", async (req, res, next) => {
+  try {
+    const { text, targetLang } = req.body || {};
+    if (!text || typeof text !== "string") return res.status(400).json({ error: "text is required" });
+    if (!targetLang || typeof targetLang !== "string") return res.status(400).json({ error: "targetLang is required" });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      const response = await fetch("https://libretranslate.com/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q: text, source: "auto", target: targetLang, format: "text" }),
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`LibreTranslate: HTTP ${response.status}`);
+      const data = await response.json();
+      res.json({ translated: data.translatedText });
+    } finally {
+      clearTimeout(timeout);
+    }
   } catch (error) {
     next(error);
   }
@@ -389,4 +596,5 @@ app.use((error, _req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`Command Vault listening on http://localhost:${PORT}`);
+  initSync().catch((err) => console.error("initSync:", err));
 });
