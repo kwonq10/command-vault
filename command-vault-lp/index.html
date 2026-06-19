@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Command Deck — Claude Code スラッシュコマンド管理ツール for Windows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <!-- ========== HERO ========== -->
+    <section id="hero" class="hero fade-in">
+      <div class="container">
+        <div class="hero__content">
+          <p class="hero__eyebrow">Claude Code 専用ツール for Windows</p>
+          <h1 class="hero__title">Command<span class="accent"> Deck</span></h1>
+          <p class="hero__catch">スラッシュコマンドを<strong>ためる・使う・チームで共有</strong><br>Alt+C で瞬時に呼び出し</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary btn--large" href="https://github.com/kwonq10/command-vault/releases/download/v1.1.0/Command-Vault-Setup-1.1.0.exe">
+              Windows版をダウンロード（無料）
+            </a>
+          </div>
+          <p class="hero__meta">v1.1.0 対応 · Windows 10 / 11 · 無料 · 広告なし · オープンソース</p>
+        </div>
+
+        <div class="hero__mockup">
+          <div class="mockup__bar">
+            <span class="mockup__dot"></span>
+            <span class="mockup__dot"></span>
+            <span class="mockup__dot"></span>
+            <span class="mockup__title">Command Deck</span>
+          </div>
+          <div class="mockup__body">
+            <div class="mockup__input">
+              <span class="mockup__prompt">/</span>
+              <span id="typing-demo" class="mockup__typed"></span>
+              <span class="mockup__cursor">|</span>
+              <button class="mockup__add">Add</button>
+            </div>
+            <div class="mockup__list">
+              <div class="mockup__cmd is-active">
+                <span class="mockup__cmd-name">/compact</span>
+                <span class="mockup__cmd-desc">会話を要約してコンテキストを圧縮します</span>
+                <span class="mockup__cmd-copy">Copy</span>
+              </div>
+              <div class="mockup__cmd">
+                <span class="mockup__cmd-name">/review</span>
+                <span class="mockup__cmd-desc">コードをレビューします</span>
+                <span class="mockup__cmd-copy">Copy</span>
+              </div>
+              <div class="mockup__cmd">
+                <span class="mockup__cmd-name">/clear</span>
+                <span class="mockup__cmd-desc">会話履歴をクリアします</span>
+                <span class="mockup__cmd-copy">Copy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 課題 ========== -->
+    <section id="problem" class="section section--problem fade-in">
+      <div class="container">
+        <p class="eyebrow">PROBLEM</p>
+        <h2 class="section__title">こんな経験、ありませんか？</h2>
+        <div class="problem__grid">
+          <div class="problem__card">
+            <span class="problem__icon">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="36" height="36" rx="10" fill="rgba(232,120,77,0.12)"/>
+                <path d="M18 10a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 14a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-10a1 1 0 0 0-1 1v4a1 1 0 0 0 2 0v-4a1 1 0 0 0-1-1zm0 7a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" fill="#e8784d"/>
+              </svg>
+            </span>
+            <h3>コマンドを忘れる</h3>
+            <p>使いたいスラッシュコマンドの名前を忘れて、毎回ドキュメントを開いて確認している</p>
+          </div>
+          <div class="problem__card">
+            <span class="problem__icon">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="36" height="36" rx="10" fill="rgba(232,120,77,0.12)"/>
+                <rect x="11" y="9" width="14" height="18" rx="2" stroke="#e8784d" stroke-width="2" fill="none"/>
+                <path d="M15 9v-1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" stroke="#e8784d" stroke-width="2"/>
+                <line x1="14" y1="15" x2="22" y2="15" stroke="#e8784d" stroke-width="2" stroke-linecap="round"/>
+                <line x1="14" y1="19" x2="22" y2="19" stroke="#e8784d" stroke-width="2" stroke-linecap="round"/>
+                <line x1="14" y1="23" x2="19" y2="23" stroke="#e8784d" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <h3>メモ管理が面倒</h3>
+            <p>よく使うコマンドをメモ帳やNotionに貼り付けて自己流管理。コピペが2ステップかかる</p>
+          </div>
+          <div class="problem__card">
+            <span class="problem__icon">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="36" height="36" rx="10" fill="rgba(232,120,77,0.12)"/>
+                <circle cx="13" cy="18" r="3" stroke="#e8784d" stroke-width="2" fill="none"/>
+                <circle cx="23" cy="13" r="3" stroke="#e8784d" stroke-width="2" fill="none"/>
+                <circle cx="23" cy="23" r="3" stroke="#e8784d" stroke-width="2" fill="none"/>
+                <line x1="16" y1="16.5" x2="20" y2="14.5" stroke="#e8784d" stroke-width="2" stroke-linecap="round"/>
+                <line x1="16" y1="19.5" x2="20" y2="21.5" stroke="#e8784d" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <h3>チームで共有できない</h3>
+            <p>チームで便利なコマンドを発見しても、Slackに貼るだけで埋もれてしまう</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 機能 ========== -->
+    <section id="features" class="section section--features fade-in">
+      <div class="container">
+        <p class="eyebrow">FEATURES</p>
+        <h2 class="section__title">Command Deck が解決します</h2>
+        <div class="features__grid">
+
+          <div class="feature__card">
+            <div class="feature__icon-wrap">🔍</div>
+            <h3 class="feature__title">自動で説明を取得</h3>
+            <p class="feature__desc">コマンド名を入力するだけで、公式ドキュメントから説明文を自動取得。取得できない場合はモーダルで手動入力できます。</p>
+          </div>
+
+          <div class="feature__card">
+            <div class="feature__icon-wrap">⚡</div>
+            <h3 class="feature__title">ワンクリックコピー</h3>
+            <p class="feature__desc">コマンド名をクリックするだけでクリップボードにコピー。Alt+C で呼び出してすぐ貼り付けられます。</p>
+          </div>
+
+          <div class="feature__card">
+            <div class="feature__icon-wrap">🔄</div>
+            <h3 class="feature__title">複数PCで同期</h3>
+            <p class="feature__desc">同期コードを設定するだけで Firebase 経由でリアルタイム同期。自宅・会社・チームメンバーと同じリストを共有できます。</p>
+          </div>
+
+          <div class="feature__card">
+            <div class="feature__icon-wrap">🗂️</div>
+            <h3 class="feature__title">アーカイブ・並び替え</h3>
+            <p class="feature__desc">使わなくなったコマンドはアーカイブして非表示に。ドラッグ&ドロップでよく使うコマンドを上位に並び替えできます。</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== スマホ連携 ========== -->
+    <section id="mobile-sync" class="section section--mobile-sync fade-in">
+      <div class="container">
+        <p class="eyebrow">MOBILE VERSION</p>
+        <h2 class="section__title section__title--mobile-sync">外出先で収集、帰宅後すぐ使える</h2>
+        <p class="mobile-sync__sub">スマホ → 同期コード → PC へ引き継ぎ</p>
+
+        <!-- スマホ → 矢印 → PC ビジュアル -->
+        <div class="mobile-sync__visual">
+          <div class="sync-device">
+            <div class="sync-phone">
+              <div class="sync-phone__notch"></div>
+              <div class="sync-phone__screen">
+                <div class="sync-screen__bar"></div>
+                <div class="sync-screen__row"></div>
+                <div class="sync-screen__row sync-screen__row--accent"></div>
+                <div class="sync-screen__row"></div>
+              </div>
+            </div>
+            <p class="sync-device__label sync-device__label--highlight">スマホ版 Web アプリ</p>
+          </div>
+
+          <div class="sync-bridge">
+            <span class="sync-bridge__badge">同期コード</span>
+            <span class="sync-bridge__arrow">→</span>
+          </div>
+
+          <div class="sync-device">
+            <div class="sync-pc">
+              <div class="sync-pc__screen">
+                <div class="sync-screen__bar"></div>
+                <div class="sync-screen__row"></div>
+                <div class="sync-screen__row sync-screen__row--accent"></div>
+                <div class="sync-screen__row"></div>
+              </div>
+              <div class="sync-pc__stand"></div>
+              <div class="sync-pc__base"></div>
+            </div>
+            <p class="sync-device__label">Command Deck (Windows)</p>
+          </div>
+        </div>
+
+        <!-- 3ステップ説明 -->
+        <div class="mobile-sync__steps">
+          <div class="mobile-sync__step">
+            <span class="mobile-sync__num">①</span>
+            <p class="mobile-sync__text">スマホでサッと登録</p>
+          </div>
+          <div class="mobile-sync__step">
+            <span class="mobile-sync__num">②</span>
+            <p class="mobile-sync__text">同じ同期コードを<br>PC版に入力</p>
+          </div>
+          <div class="mobile-sync__step">
+            <span class="mobile-sync__num">③</span>
+            <p class="mobile-sync__text">帰宅後すぐ<br>PC版で使える</p>
+          </div>
+        </div>
+
+        <!-- CTAボタン -->
+        <div class="mobile-sync__cta">
+          <a class="btn btn--primary" href="https://command-mobile-vault-lp.tetsugaku4.workers.dev" target="_blank" rel="noopener">
+            スマホ版の詳細を見る
+          </a>
+          <p class="mobile-sync__caption">ブラウザで動く・インストール不要</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 3ステップ ========== -->
+    <section id="steps" class="section section--steps fade-in">
+      <div class="container">
+        <p class="eyebrow">HOW TO START</p>
+        <h2 class="section__title">3ステップで使い始める</h2>
+        <div class="steps__grid">
+          <div class="step__card">
+            <span class="step__num">01</span>
+            <h3 class="step__title">インストール</h3>
+            <p class="step__desc">Setup.exe をダウンロードして実行。インストール完了後にアプリが自動起動します。</p>
+          </div>
+          <div class="step__arrow">→</div>
+          <div class="step__card">
+            <span class="step__num">02</span>
+            <h3 class="step__title">コマンドを入力</h3>
+            <p class="step__desc">Alt+C でアプリを呼び出し、入力欄にスラッシュコマンド名を入力して Add を押します。</p>
+          </div>
+          <div class="step__arrow">→</div>
+          <div class="step__card">
+            <span class="step__num">03</span>
+            <h3 class="step__title">即使える</h3>
+            <p class="step__desc">説明文が自動取得されてリストに登録完了。クリックでコピーして Claude Code に貼り付けるだけ。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CTA ========== -->
+    <section id="cta" class="section section--cta fade-in">
+      <div class="container">
+        <div class="cta__body">
+          <h2 class="cta__title">今すぐ無料で使い始める</h2>
+          <a class="btn btn--primary btn--large" href="https://github.com/kwonq10/command-vault/releases/download/v1.1.0/Command-Vault-Setup-1.1.0.exe">Windows版をダウンロード（無料）</a>
+        </div>
+        <footer class="footer">
+          <p class="footer__brand">Command <span class="accent">Deck</span></p>
+          <p class="footer__copy">&copy; 2026 Command Deck · MIT License</p>
+        </footer>
+      </div>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
