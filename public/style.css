@@ -855,6 +855,52 @@ a.detail-value {
   cursor: not-allowed;
 }
 
+.sync-auto-gen-btn {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sync-auto-gen-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--accent-border);
+}
+
+.expiry-row {
+  align-items: center;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.expiry-wrap {
+  display: flex;
+  gap: 12px;
+}
+
+.expiry-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.expiry-option input[type="radio"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .sync-status {
   margin-top: 6px;
   padding: 4px 8px;

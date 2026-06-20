@@ -32,8 +32,17 @@
         <div class="settings-row sync-code-row">
           <label class="settings-label" for="sync-code-input">同期コード</label>
           <div class="sync-code-wrap">
-            <input id="sync-code-input" type="text" class="sync-code-input" placeholder="例: myteam-2026" autocomplete="off" />
+            <input id="sync-code-input" type="text" class="sync-code-input" placeholder="自動生成 または 手入力" autocomplete="off" />
+            <button id="sync-auto-gen" type="button" class="sync-auto-gen-btn">自動生成</button>
             <button id="sync-code-save" type="button" class="sync-code-save-btn">保存</button>
+          </div>
+        </div>
+        <div class="settings-row expiry-row">
+          <label class="settings-label">有効期限</label>
+          <div class="expiry-wrap">
+            <label class="expiry-option"><input type="radio" name="expiry" value="10" /> 10分</label>
+            <label class="expiry-option"><input type="radio" name="expiry" value="30" /> 30分</label>
+            <label class="expiry-option"><input type="radio" name="expiry" value="0" checked /> 無期限</label>
           </div>
         </div>
         <div id="sync-status" class="sync-status" hidden></div>

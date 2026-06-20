@@ -7,7 +7,7 @@ import cors from "cors";
 import express from "express";
 import fetch from "node-fetch";
 import { initializeApp, getApps } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, getDocs, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc } from "firebase/firestore";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -550,11 +550,38 @@ app.get("/api/sync-config", async (req, res, next) => {
 
 app.post("/api/sync-config", async (req, res, next) => {
   try {
-    const { syncCode } = req.body || {};
+    const { syncCode, expiresAt } = req.body || {};
+    const code = typeof syncCode === "string" ? syncCode.trim() : "";
+
+    if (code) {
+      // sync_codes/{code} ドキュメントの存在・有効期限チェック
+      const db = firestoreDb();
+      const codeDocRef = doc(db, "sync_codes", code);
+      const codeSnap = await getDoc(codeDocRef);
+
+      if (codeSnap.exists()) {
+        // 既存コード → 有効期限チェック
+        const data = codeSnap.data();
+        if (data.expiresAt) {
+          const expiry = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+          if (expiry < new Date()) {
+            return res.status(410).json({ error: "この同期コードは期限切れです" });
+          }
+        }
+      } else {
+        // 新規コード → expiresAt を Firestore に書き込む
+        const expiry = expiresAt ? new Date(expiresAt) : null;
+        await setDoc(codeDocRef, {
+          createdAt: new Date(),
+          expiresAt: expiry
+        });
+      }
+    }
+
     const config = await readSyncConfig();
-    config.syncCode = typeof syncCode === "string" ? syncCode.trim() : "";
+    config.syncCode = code;
     await writeSyncConfig(config);
-    if (config.syncCode) {
+    if (code) {
       initSync().catch((err) => console.error("sync after config change:", err));
     }
     res.json(config);

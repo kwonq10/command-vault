@@ -30,6 +30,7 @@ const els = {
   descModalSave: document.querySelector("#desc-modal-save"),
   descModalSkip: document.querySelector("#desc-modal-skip"),
   syncCodeInput: document.querySelector("#sync-code-input"),
+  syncAutoGenBtn: document.querySelector("#sync-auto-gen"),
   syncCodeSave: document.querySelector("#sync-code-save"),
   syncStatus: document.querySelector("#sync-status")
 };
@@ -785,13 +786,29 @@ els.updateBtn?.addEventListener("click", () => {
   window.commandVault?.openExternal("https://github.com/kwonq10/command-vault/releases/latest");
 });
 
+// 有効期限取得（分数。0 = 無期限）
+function getSelectedExpiry() {
+  const checked = document.querySelector('input[name="expiry"]:checked');
+  return checked ? parseInt(checked.value, 10) : 0;
+}
+
+// UUID 自動生成
+els.syncAutoGenBtn?.addEventListener("click", () => {
+  els.syncCodeInput.value = crypto.randomUUID();
+  els.syncCodeInput.focus();
+});
+
 els.syncCodeSave?.addEventListener("click", async () => {
   const syncCode = els.syncCodeInput?.value.trim() || "";
+  const minutes = getSelectedExpiry();
+  const expiresAt = minutes > 0
+    ? new Date(Date.now() + minutes * 60 * 1000).toISOString()
+    : null;
   els.syncCodeSave.disabled = true;
   try {
     await requestJSON("/api/sync-config", {
       method: "POST",
-      body: JSON.stringify({ syncCode })
+      body: JSON.stringify({ syncCode, expiresAt })
     });
     if (syncCode) {
       showSyncStatus(`同期中: ${syncCode}`);
