@@ -8,6 +8,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#e8784d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CmdDeck" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
   </head>
   <body>
 
@@ -35,15 +42,32 @@
               id="sync-input"
               type="text"
               class="sync-input"
-              placeholder="例: myteam-2026"
+              placeholder="UUID生成 または 手入力"
               autocomplete="off"
               autocapitalize="none"
               enterkeyhint="go"
             />
-            <button id="sync-random-btn" class="sync-random-btn" title="ランダム発行">🎲</button>
+            <button id="sync-random-btn" class="sync-random-btn" title="UUID発行">UUID生成</button>
             <button id="sync-save-btn" class="sync-save-btn">接続する</button>
           </div>
         </div>
+
+        <!-- 有効期限 -->
+        <div class="settings-row settings-row--expiry">
+          <label class="settings-label">有効期限</label>
+          <div class="expiry-wrap">
+            <label class="expiry-option">
+              <input type="radio" name="expiry" value="10" /> 10分
+            </label>
+            <label class="expiry-option">
+              <input type="radio" name="expiry" value="30" /> 30分
+            </label>
+            <label class="expiry-option">
+              <input type="radio" name="expiry" value="0" checked /> 無期限
+            </label>
+          </div>
+        </div>
+
         <div id="sync-status" class="sync-status" hidden></div>
 
         <!-- 言語切り替え -->
@@ -126,5 +150,16 @@
     </div>
 
     <script type="module" src="app.js"></script>
+
+    <!-- Service Worker 登録 -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((reg) => console.log('[SW] registered:', reg.scope))
+            .catch((err) => console.warn('[SW] registration failed:', err));
+        });
+      }
+    </script>
   </body>
 </html>

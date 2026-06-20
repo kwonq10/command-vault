@@ -169,17 +169,55 @@ ul { list-style: none; }
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
-  font-size: 16px;
-  min-width: 40px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0 10px;
   min-height: 40px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
   flex-shrink: 0;
+  white-space: nowrap;
 }
-.sync-random-btn:active { border-color: var(--accent); background: var(--accent-dim); }
+.sync-random-btn:active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+/* 有効期限行 */
+.settings-row--expiry {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.expiry-wrap {
+  display: flex;
+  gap: 14px;
+}
+
+.expiry-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.expiry-option input[type="radio"] {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
 
 .sync-save-btn {
   background: var(--accent);

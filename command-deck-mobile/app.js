@@ -344,18 +344,21 @@ settingsBtn.addEventListener('click', () => {
   }
 });
 
-// ランダム同期コード生成
+// UUID 生成
 function randomSyncCode() {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let suffix = '';
-  for (let i = 0; i < 5; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
-  return 'deck-' + suffix;
+  return crypto.randomUUID();
 }
 
 syncRandomBtn.addEventListener('click', () => {
   syncInput.value = randomSyncCode();
   syncInput.focus();
 });
+
+// 有効期限取得（分数。0 = 無期限）
+function getSelectedExpiry() {
+  const checked = document.querySelector('input[name="expiry"]:checked');
+  return checked ? parseInt(checked.value, 10) : 0;
+}
 
 // 同期コード接続
 function setSyncStatus(msg, isError = false) {
@@ -374,10 +377,41 @@ async function saveSync() {
 
   try {
     const { db, fs } = await getFb();
-    const { collection, getDocs, query, orderBy } = fs;
+    const { collection, getDocs, query, orderBy, doc, getDoc, setDoc, serverTimestamp } = fs;
+
+    // sync_codes/{code} ドキュメントの存在・有効期限チェック
+    const codeDocRef = doc(db, 'sync_codes', code);
+    const codeSnap = await getDoc(codeDocRef);
+
+    if (codeSnap.exists()) {
+      // 既存コード → 有効期限チェック
+      const data = codeSnap.data();
+      if (data.expiresAt) {
+        const expiresAt = data.expiresAt.toDate();
+        if (expiresAt < new Date()) {
+          setSyncStatus('この同期コードは期限切れです', true);
+          syncSaveBtn.disabled = false;
+          syncSaveBtn.textContent = '接続する';
+          return;
+        }
+      }
+    } else {
+      // 新規コード → expiresAt を Firestore に書き込む
+      const minutes = getSelectedExpiry();
+      const expiresAt = minutes > 0
+        ? new Date(Date.now() + minutes * 60 * 1000)
+        : null;
+      await setDoc(codeDocRef, {
+        createdAt: serverTimestamp(),
+        expiresAt: expiresAt
+      });
+    }
+
+    // コマンドサブコレクションの読み込みテスト（接続確認）
     const col = collection(db, 'sync_codes', code, 'commands');
     const q = query(col, orderBy('createdAt', 'asc'));
     await getDocs(q);
+
     syncCode = code;
     localStorage.setItem('syncCode', code);
     setSyncStatus('接続しました ✓');
