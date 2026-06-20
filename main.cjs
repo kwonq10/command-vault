@@ -230,6 +230,16 @@ app.whenReady().then(async () => {
     win.setSize(550, height === 420 ? 420 : 160);
   });
 
+  ipcMain.on("window:expand-settings", () => {
+    if (!win) return;
+    win.setSize(550, 320);
+  });
+
+  ipcMain.on("window:collapse-settings", (_event, height) => {
+    if (!win) return;
+    win.setSize(550, height === 420 ? 420 : 160);
+  });
+
   ipcMain.on("minimize-window", () => {
     win?.minimize();
   });

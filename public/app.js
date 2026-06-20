@@ -755,10 +755,19 @@ els.languageSelect.addEventListener("change", async () => {
     showError(error.message);
   }
 });
+function expandForSettings(open) {
+  if (open) {
+    window.commandVault?.expandSettings();
+  } else {
+    window.commandVault?.collapseSettings(listOpen ? 420 : 160);
+  }
+}
+
 els.settingsBtn.addEventListener("click", (event) => {
   event.stopPropagation();
   const isOpen = els.settingsPanel.classList.toggle("is-open");
   els.settingsBtn.setAttribute("aria-expanded", String(isOpen));
+  expandForSettings(isOpen);
 });
 
 document.addEventListener("click", (event) => {
@@ -769,6 +778,7 @@ document.addEventListener("click", (event) => {
   ) {
     els.settingsPanel.classList.remove("is-open");
     els.settingsBtn.setAttribute("aria-expanded", "false");
+    expandForSettings(false);
   }
 });
 
