@@ -159,7 +159,7 @@ button {
   top: 44px;
   right: 10px;
   z-index: 100;
-  min-width: 210px;
+  min-width: 300px;
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -876,9 +876,9 @@ a.detail-value {
 }
 
 .expiry-row {
-  align-items: center;
-  flex-direction: row;
-  gap: 10px;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .expiry-wrap {
