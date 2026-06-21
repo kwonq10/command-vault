@@ -50,6 +50,7 @@ button {
   position: relative;
   display: grid;
   grid-template-rows: 44px 56px auto auto minmax(0, 1fr);
+  align-content: start;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -155,11 +156,15 @@ button {
 }
 
 .settings-panel {
-  position: absolute;
+  position: fixed;
   top: 44px;
-  right: 10px;
+  left: 0;
+  right: 0;
   z-index: 100;
-  min-width: 300px;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 54px);
+  overflow-y: auto;
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -169,6 +174,7 @@ button {
   opacity: 0;
   pointer-events: none;
   transition: transform 0.18s ease, opacity 0.18s ease;
+  box-sizing: border-box;
 }
 
 .settings-panel.is-open {

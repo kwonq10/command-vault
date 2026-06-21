@@ -9,6 +9,7 @@ let archiveOpen = false;
 const translationCache = {};
 
 const els = {
+  launcher: document.querySelector(".launcher"),
   form: document.querySelector("#add-form"),
   commandInput: document.querySelector("#command-input"),
   languageSelect: document.querySelector("#language-select"),
@@ -755,7 +756,12 @@ els.languageSelect.addEventListener("change", async () => {
     showError(error.message);
   }
 });
+const inputAreaSection = document.querySelector(".input-area");
+
 function expandForSettings(open) {
+  if (inputAreaSection) inputAreaSection.style.display = open ? "none" : "";
+  els.listToggleBar.style.display = open ? "none" : "";
+  els.listArea.style.display = open ? "none" : (listOpen ? "block" : "none");
   if (open) {
     window.commandVault?.expandSettings();
   } else {
