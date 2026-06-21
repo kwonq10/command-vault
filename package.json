@@ -1,6 +1,6 @@
 {
   "name": "command-vault",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Personal launcher for Claude Code slash commands",
   "author": "Command Vault",
   "type": "module",

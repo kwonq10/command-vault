@@ -227,17 +227,19 @@ app.whenReady().then(async () => {
 
   ipcMain.on("window:resize", (_event, height) => {
     if (!win) return;
-    win.setSize(550, height === 420 ? 420 : 160);
+    win.setSize(550, Math.min(500, Math.max(160, height)));
   });
 
   ipcMain.on("window:expand-settings", () => {
     if (!win) return;
-    win.setSize(550, 320);
+    const [w] = win.getSize();
+    win.setSize(w, 320);
   });
 
   ipcMain.on("window:collapse-settings", (_event, height) => {
     if (!win) return;
-    win.setSize(550, height === 420 ? 420 : 160);
+    const [w] = win.getSize();
+    win.setSize(w, Math.min(500, Math.max(160, height)));
   });
 
   ipcMain.on("minimize-window", () => {
